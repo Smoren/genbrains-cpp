@@ -11,6 +11,54 @@ namespace GenBrains {
     class ClusterMap
     {
     public:
+        class iterator;
+        friend class iterator;
+        class iterator: public std::iterator< std::bidirectional_iterator_tag, ClusterMapItem, ptrdiff_t > {
+            typename std::vector< std::map<unsigned long, ClusterMapItem*> >::iterator itContainer;
+            typename map<unsigned long, ClusterMapItem*>::iterator itSubContainer;
+            std::vector< std::map<unsigned long, ClusterMapItem*> >* container;
+            std::map<unsigned long, ClusterMapItem*>* subContainer;
+            public: iterator(
+                std::vector< std::map<unsigned long, ClusterMapItem*> >& container,
+                std::map<unsigned long, ClusterMapItem*>& subContainer,
+                const typename std::vector< std::map<unsigned long, ClusterMapItem*> >::iterator& itContainer,
+                const typename map<unsigned long, ClusterMapItem*>::iterator& itSubContainer
+            ) : itContainer(itContainer), itSubContainer(itSubContainer), container(&container), subContainer(&subContainer) {
+
+            }
+            bool operator==(const iterator& x) const {
+                return itSubContainer == x.itSubContainer;
+            }
+            bool operator!=(const iterator& x) const {
+                return !(*this == x);
+            }
+            typename map<unsigned long, ClusterMapItem*>::reference operator*() const {
+                return *itSubContainer;
+            }
+            iterator &operator++() {
+                ++itSubContainer;
+
+                while(itSubContainer == subContainer->end()) {
+                    ++itContainer;
+
+                    if(itContainer != container->end()) {
+                        itSubContainer = (*itContainer).begin();
+                        subContainer = &(*itContainer);
+                    } else {
+                        break;
+                    }
+                }
+
+                return *this;
+            }
+
+            iterator operator++(int) {
+                iterator tmp = *this;
+                ++(*this);
+                return tmp;
+            }
+        };
+
         ClusterMap(unsigned long clusters, unsigned long clusterSize) : clusters(clusters), clusterSize(clusterSize) {
             if(!clusters || !clusterSize) {
                 throw std::runtime_error("bad ClusterMap config");
@@ -50,6 +98,25 @@ namespace GenBrains {
             return data[getMapIndex(index)].at(index);
         }
 
+        iterator begin() {
+            auto containerIter = data.begin();
+            for(unsigned long i=0; i<data.size(); i++) {
+                if(data[i].size()) {
+                    break;
+                } else {
+                    ++containerIter;
+                }
+            }
+            auto& firstMap = (*containerIter);
+
+            return iterator(data, firstMap, containerIter, firstMap.begin());
+        }
+
+        iterator end() {
+            std::map<unsigned long, ClusterMapItem*>& lastMap = data.at(data.size()-1);
+            return iterator(data, lastMap, data.end(), lastMap.end());
+        }
+
         std::map<unsigned long, ClusterMapItem*> getData() const {
             std::map<unsigned long, ClusterMapItem*> result;
             for(auto& cluster : data) {
@@ -81,4 +148,3 @@ namespace GenBrains {
         return stream << item.getData();
     }
 }
-

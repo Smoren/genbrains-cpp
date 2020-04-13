@@ -1,6 +1,6 @@
 #pragma once
 
-#include "coords.h";
+#include "coords.h"
 
 namespace GenBrains {
     class DirectionVector : public Coords
