@@ -59,12 +59,12 @@ namespace GenBrains {
             }
         };
 
-        ClusterMap(unsigned long clusters, unsigned long clusterSize) : clusters(clusters), clusterSize(clusterSize) {
-            if(!clusters || !clusterSize) {
+        ClusterMap(unsigned long clustersCount, unsigned long clusterSize) : clustersCount(clustersCount), clusterSize(clusterSize) {
+            if(!clustersCount || !clusterSize) {
                 throw std::runtime_error("bad ClusterMap config");
             }
-            data.resize(static_cast<unsigned long>(clusters));
-            for(unsigned long i=0; i<clusters; i++) {
+            data.resize(static_cast<unsigned long>(clustersCount));
+            for(unsigned long i=0; i<clustersCount; i++) {
                 mtxs.push_back(new std::mutex());
             }
         }
@@ -98,6 +98,15 @@ namespace GenBrains {
             return data[getMapIndex(index)].at(index);
         }
 
+        unsigned long size() {
+            unsigned long result = 0;
+            for(auto& m : data) {
+                result += m.size();
+            }
+
+            return result;
+        }
+
         iterator begin() {
             auto containerIter = data.begin();
             for(unsigned long i=0; i<data.size(); i++) {
@@ -107,6 +116,11 @@ namespace GenBrains {
                     ++containerIter;
                 }
             }
+
+            if(containerIter == data.end()) {
+                --containerIter;
+            }
+
             auto& firstMap = (*containerIter);
 
             return iterator(data, firstMap, containerIter, firstMap.begin());
@@ -128,14 +142,14 @@ namespace GenBrains {
             return result;
         }
     protected:
-        unsigned long clusters;
+        unsigned long clustersCount;
         unsigned long clusterSize;
         std::vector< std::map<unsigned long, ClusterMapItem*> > data;
         std::vector<std::mutex*> mtxs;
 
         unsigned long getMapIndex(unsigned long index) {
             unsigned long mapIndex = static_cast<unsigned long>(index) / clusterSize;
-            if(mapIndex >= clusters) {
+            if(mapIndex >= clustersCount) {
                 throw std::runtime_error("map index is out of range");
             }
 
