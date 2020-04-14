@@ -25,6 +25,7 @@ namespace GenBrains {
         void checkExist(int id);
         Cell* get(int id);
         int add(Cell* cell);
+        void add(Cell* cell, int id);
         int add(Cell* cell, Coords coords);
         void remove(int id);
         void remove(Cell* cell);
@@ -35,8 +36,12 @@ namespace GenBrains {
         void process(Cell* cell);
         void apply(Cell* cell);
         void apply();
-        Cell* getCellForApplyAdd();
-        Cell* getCellForApplyRemove();
+        Cell* getCellForAdd();
+        Cell* getCellForRemove();
+        std::map<int, Cell*> getCellListForAdd(unsigned long count);
+        std::vector<Cell*> getCellListForRemove(unsigned long count);
+        int getForAddCount();
+        int getForRemoveCount();
         void applyAdd();
         void applyRemove();
         void setProcessHandler(int type, const std::function<void(Cell*, Map&, GroupManager&)> callback);

@@ -7,8 +7,8 @@ namespace GenBrains {
     GroupManager::GroupManager(
         Map& map
     ) : lastId(0), terminated(false), map(map),
-        group(ClusterMap<Cell*>(static_cast<unsigned long>(map.getWidth()*1), static_cast<unsigned long>(map.getHeight()))),
-        idLimit(map.getWidth()*map.getHeight()*1),
+        group(ClusterMap<Cell*>(static_cast<unsigned long>(map.getWidth()*10), static_cast<unsigned long>(map.getHeight()))),
+        idLimit(map.getWidth()*map.getHeight()*10),
         iter(group.begin()) {
 
     }
@@ -63,13 +63,18 @@ namespace GenBrains {
     }
 
     int GroupManager::add(Cell* cell) {
-        forAddMutex.lock();
+        //forAddMutex.lock();
         int id = getNextId();
         cell->setId(id);
-        forAddMutex.unlock();
+        //forAddMutex.unlock();
         group.insert({id, cell});
 
         return lastId;
+    }
+
+    void GroupManager::add(Cell* cell, int id) {
+        cell->setId(id);
+        group.insert({static_cast<unsigned long>(id), cell});
     }
 
     int GroupManager::add(Cell* cell, Coords coords) {
@@ -161,7 +166,7 @@ namespace GenBrains {
         writableMutex.unlock();
     }
 
-    Cell* GroupManager::getCellForApplyAdd() {
+    Cell* GroupManager::getCellForAdd() {
         forAddMutex.lock();
         if(!forAdd.size()) {
             forAddMutex.unlock();
@@ -174,7 +179,7 @@ namespace GenBrains {
         return result;
     }
 
-    Cell* GroupManager::getCellForApplyRemove() {
+    Cell* GroupManager::getCellForRemove() {
         forRemoveMutex.lock();
         if(!forRemove.size()) {
             forRemoveMutex.unlock();
@@ -185,6 +190,44 @@ namespace GenBrains {
         forRemoveMutex.unlock();
 
         return result;
+    }
+
+    std::map<int, Cell*> GroupManager::getCellListForAdd(unsigned long count) {
+        std::map<int, Cell*> result;
+        Cell* cell;
+        for(unsigned long i=0; i<count; i++) {
+            if(!forAdd.size()) {
+                break;
+            }
+            cell = forAdd.top();
+            forAdd.pop();
+            result.insert({getNextId(), cell});
+        }
+
+        return result;
+    }
+
+    std::vector<Cell*> GroupManager::getCellListForRemove(unsigned long count) {
+        std::vector<Cell*> result;
+        Cell* cell;
+        for(unsigned long i=0; i<count; i++) {
+            if(!forRemove.size()) {
+                break;
+            }
+            cell = forRemove.top();
+            forRemove.pop();
+            result.push_back(cell);
+        }
+
+        return result;
+    }
+
+    int GroupManager::getForAddCount() {
+        return static_cast<int>(forAdd.size());
+    }
+
+    int GroupManager::getForRemoveCount() {
+        return static_cast<int>(forRemove.size());
     }
 
     void GroupManager::applyAdd() {

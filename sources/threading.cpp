@@ -21,10 +21,10 @@ namespace GenBrains {
 
         int i=0;
         while(true) {
+            //std::cout << "========================= step " << i << " started" << std::endl;
+
             std::chrono::time_point<std::chrono::system_clock> start, end;
             start = std::chrono::system_clock::now();
-
-            //std::cout << "========================= step " << i << " started" << std::endl;
 
             std::vector<std::thread> subprocesses;
 
@@ -40,32 +40,50 @@ namespace GenBrains {
                 break;
             }
 
-            //gm.apply();
+            std::chrono::time_point<std::chrono::system_clock> startApply;
+            startApply = std::chrono::system_clock::now();
 
-            std::vector<std::thread> applyProcesses;
-            for(int j=0; j<Config::THREADS; j++) {
-                applyProcesses.push_back(std::thread(threadApplyAdd, std::ref(gm), j));
+            int forAddCount = gm.getForAddCount();
+            int forRemoveCount = gm.getForRemoveCount();
+
+            if(true || forAddCount+forRemoveCount < 200) {
+                gm.apply();
+            } else {
+                std::vector<std::thread> applyProcesses;
+                int forAddCountPerThread = gm.getForAddCount()/Config::THREADS + 1;
+                int forRemoveCountPerThread = gm.getForRemoveCount()/Config::THREADS + 1;
+
+                for(int j=0; j<Config::THREADS; j++) {
+                    applyProcesses.push_back(std::thread(threadApplyAdd, std::ref(gm), forAddCountPerThread, j));
+                }
+
+                for(int j=0; j<Config::THREADS; j++) {
+                    applyProcesses.push_back(std::thread(threadApplyRemove, std::ref(gm), forRemoveCountPerThread, j));
+                }
+
+                for(auto& applyProcess : applyProcesses) {
+                    applyProcess.join();
+                }
+
+                //std::cout << "using mt for appliing!" << std::endl;
             }
-
-            for(int j=0; j<Config::THREADS; j++) {
-                applyProcesses.push_back(std::thread(threadApplyRemove, std::ref(gm), j));
-            }
-
-            for(auto& applyProcess : applyProcesses) {
-                applyProcess.join();
-            }
-
-            gm.apply();
-            gm.generate();
 
             end = std::chrono::system_clock::now();
-            int timeSpent = std::chrono::duration_cast<std::chrono::microseconds>(end-start).count();
+            int timeSpentApply = static_cast<int>(std::chrono::duration_cast<std::chrono::microseconds>(end-startApply).count());
+
+            gm.generate();
+
+            int timeSpent = static_cast<int>(std::chrono::duration_cast<std::chrono::microseconds>(end-start).count());
             int timeToSleep = Config::STEP_TIMEOUT*1000 - timeSpent;
+
+            //if(timeSpentApply > 1000) {
+            //    std::cout << i << " | time: " << timeSpentApply << " / " << timeSpent << " (" << forAddCount + forRemoveCount << ")" << std::endl;
+            //}
 
             if(i % 250 == 0) {
                 gm.getDistributor().updateState();
-                std::cout << i << " | time: " << timeSpent << endl;
                 gm.printIdUsage();
+                //cout << "total appliing: " << forAddCount + forRemoveCount << std::endl;
             }
 
             if(timeToSleep > 0) {
@@ -82,16 +100,22 @@ namespace GenBrains {
         std::cout << "process finished " << std::endl;
     }
 
-    void threadApplyAdd(GroupManager& gm, int id) {
-        Cell* cell;
-        while((cell = gm.getCellForApplyAdd()) != nullptr) {
-            gm.add(cell);
+    void threadApplyAdd(GroupManager& gm, int limit, int id) {
+        gm.getWritableMutex().lock();
+        map<int, Cell*> cells = gm.getCellListForAdd(static_cast<unsigned long>(limit));
+        gm.getWritableMutex().unlock();
+
+        for(auto& p : cells) {
+            gm.add(p.second, p.first);
         }
     }
 
-    void threadApplyRemove(GroupManager& gm, int id) {
-        Cell* cell;
-        while((cell = gm.getCellForApplyRemove()) != nullptr) {
+    void threadApplyRemove(GroupManager& gm, int limit, int id) {
+        gm.getWritableMutex().lock();
+        vector<Cell*> cells = gm.getCellListForRemove(static_cast<unsigned long>(limit));
+        gm.getWritableMutex().unlock();
+
+        for(auto* cell : cells) {
             gm.remove(cell);
         }
     }
