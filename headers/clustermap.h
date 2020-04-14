@@ -14,15 +14,15 @@ namespace GenBrains {
         class iterator;
         friend class iterator;
         class iterator: public std::iterator< std::bidirectional_iterator_tag, ClusterMapItem, ptrdiff_t > {
-            typename std::vector< std::map<unsigned long, ClusterMapItem*> >::iterator itContainer;
-            typename map<unsigned long, ClusterMapItem*>::iterator itSubContainer;
-            std::vector< std::map<unsigned long, ClusterMapItem*> >* container;
-            std::map<unsigned long, ClusterMapItem*>* subContainer;
+            typename std::vector< std::map<unsigned long, ClusterMapItem> >::iterator itContainer;
+            typename map<unsigned long, ClusterMapItem>::iterator itSubContainer;
+            std::vector< std::map<unsigned long, ClusterMapItem> >* container;
+            std::map<unsigned long, ClusterMapItem>* subContainer;
             public: iterator(
-                std::vector< std::map<unsigned long, ClusterMapItem*> >& container,
-                std::map<unsigned long, ClusterMapItem*>& subContainer,
-                const typename std::vector< std::map<unsigned long, ClusterMapItem*> >::iterator& itContainer,
-                const typename map<unsigned long, ClusterMapItem*>::iterator& itSubContainer
+                std::vector< std::map<unsigned long, ClusterMapItem> >& container,
+                std::map<unsigned long, ClusterMapItem>& subContainer,
+                const typename std::vector< std::map<unsigned long, ClusterMapItem> >::iterator& itContainer,
+                const typename map<unsigned long, ClusterMapItem>::iterator& itSubContainer
             ) : itContainer(itContainer), itSubContainer(itSubContainer), container(&container), subContainer(&subContainer) {
 
             }
@@ -32,7 +32,7 @@ namespace GenBrains {
             bool operator!=(const iterator& x) const {
                 return !(*this == x);
             }
-            typename map<unsigned long, ClusterMapItem*>::reference operator*() const {
+            typename map<unsigned long, ClusterMapItem>::reference operator*() const {
                 return *itSubContainer;
             }
             iterator &operator++() {
@@ -70,17 +70,15 @@ namespace GenBrains {
         }
 
         ~ClusterMap() {
-            for(auto& cluster : data) {
-                for(auto& item : cluster) {
-                    delete item.second;
-                }
-            }
+            //for(auto& item : *this) {
+            //    delete item.second;
+            //}
             for(auto& mtx : mtxs) {
                 delete mtx;
             }
         }
 
-        void insert(std::pair<unsigned long, ClusterMapItem*> item) {
+        void insert(std::pair<unsigned long, ClusterMapItem> item) {
             auto mapIndex = getMapIndex(item.first);
             mtxs[mapIndex]->lock();
             data[mapIndex].insert(item);
@@ -127,12 +125,12 @@ namespace GenBrains {
         }
 
         iterator end() {
-            std::map<unsigned long, ClusterMapItem*>& lastMap = data.at(data.size()-1);
+            std::map<unsigned long, ClusterMapItem>& lastMap = data.at(data.size()-1);
             return iterator(data, lastMap, data.end(), lastMap.end());
         }
 
-        std::map<unsigned long, ClusterMapItem*> getData() const {
-            std::map<unsigned long, ClusterMapItem*> result;
+        std::map<unsigned long, ClusterMapItem> getData() const {
+            std::map<unsigned long, ClusterMapItem> result;
             for(auto& cluster : data) {
                 for(auto& item : cluster) {
                     result.insert(item);
@@ -144,7 +142,7 @@ namespace GenBrains {
     protected:
         unsigned long clustersCount;
         unsigned long clusterSize;
-        std::vector< std::map<unsigned long, ClusterMapItem*> > data;
+        std::vector< std::map<unsigned long, ClusterMapItem> > data;
         std::vector<std::mutex*> mtxs;
 
         unsigned long getMapIndex(unsigned long index) {
