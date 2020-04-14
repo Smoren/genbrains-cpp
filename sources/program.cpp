@@ -1,7 +1,7 @@
-#include "program.h"
-#include "type.h"
-#include "cellbot.h"
-#include "randomizer.h"
+#include "headers/program.h"
+#include "headers/type.h"
+#include "headers/cellbot.h"
+#include "headers/randomizer.h"
 
 namespace GenBrains {
     Program::Program(

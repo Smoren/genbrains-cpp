@@ -1,7 +1,7 @@
 #include <stdexcept>
 #include <sstream>
-#include "directionvector.h"
-#include "randomizer.h"
+#include "headers/directionvector.h"
+#include "headers/randomizer.h"
 
 
 namespace GenBrains {

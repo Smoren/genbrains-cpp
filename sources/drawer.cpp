@@ -2,8 +2,8 @@
 #include <GL/gl.h>
 #include <thread>
 #include <unistd.h>
-#include "drawer.h"
-#include "type.h"
+#include "headers/drawer.h"
+#include "headers/type.h"
 
 namespace GenBrains {
     bool Drawer::isActive = true;

@@ -3,17 +3,17 @@
 #include <thread>
 #include <math.h>
 #include <ctime>
-#include "printer.h"
-#include "groupmanager.h"
-#include "cellbot.h"
-#include "directionvector.h"
-#include "drawer.h"
-#include "distributor.h"
-#include "threading.h"
-#include "config.h"
-#include "type.h"
-#include "commands.h"
-#include "randomizer.h"
+#include "headers/printer.h"
+#include "headers/groupmanager.h"
+#include "headers/cellbot.h"
+#include "headers/directionvector.h"
+#include "headers/drawer.h"
+#include "headers/distributor.h"
+#include "headers/threading.h"
+#include "headers/config.h"
+#include "headers/type.h"
+#include "headers/commands.h"
+#include "headers/randomizer.h"
 
 using namespace GenBrains;
 

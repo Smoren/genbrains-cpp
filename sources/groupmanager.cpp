@@ -1,10 +1,14 @@
 #include <stdexcept>
 #include <sstream>
-#include "groupmanager.h"
-#include "commands.h"
+#include "headers/groupmanager.h"
+#include "headers/commands.h"
 
 namespace GenBrains {
-    GroupManager::GroupManager(Map& map) : lastId(0), terminated(false), map(map) {
+    GroupManager::GroupManager(
+        Map& map
+    ) : lastId(0), terminated(false), map(map),
+        group(ClusterMap<Cell*>(static_cast<unsigned long>(map.getWidth()), static_cast<unsigned long>(map.getHeight()))),
+        iter(group.begin()) {
 
     }
 
@@ -23,7 +27,7 @@ namespace GenBrains {
         terminated = true;
     }
 
-    const std::map<int, Cell*>& GroupManager::getGroup() const {
+    const ClusterMap<Cell*>& GroupManager::getGroup() const {
         return group;
     }
 
@@ -35,15 +39,15 @@ namespace GenBrains {
         return static_cast<int>(group.size());
     }
 
-    bool GroupManager::isset(int id) const {
-        if(group.find(id) == group.end()) {
+    bool GroupManager::isset(int id) {
+        if(group.find(static_cast<unsigned long>(id)) == group.end()) {
             return false;
         }
 
         return true;
     }
 
-    void GroupManager::checkExist(int id) const {
+    void GroupManager::checkExist(int id) {
         if(!isset(id)) {
             std::stringstream ss;
             ss << "cell is not exist (id: " << id << ")";
@@ -51,10 +55,10 @@ namespace GenBrains {
         }
     }
 
-    Cell* GroupManager::get(int id) const {
+    Cell* GroupManager::get(int id) {
         checkExist(id);
 
-        return group.at(id);
+        return group.at(static_cast<unsigned long>(id));
     }
 
     int GroupManager::add(Cell* cell) {
@@ -78,7 +82,7 @@ namespace GenBrains {
             map.remove(cell, true);
         } catch(std::runtime_error e) {}
 
-        group.erase(group.find(id));
+        group.erase(static_cast<unsigned long>(id));
         delete cell;
     }
 
@@ -87,7 +91,7 @@ namespace GenBrains {
             map.remove(cell, true);
         } catch(std::runtime_error e) {}
 
-        group.erase(group.find(cell->getId()));
+        group.erase(static_cast<unsigned long>(cell->getId()));
         delete cell;
     }
 
@@ -201,11 +205,11 @@ namespace GenBrains {
         return map.getDistributor();
     }
 
-    std::map<int, Cell*>::iterator GroupManager::begin() {
+    ClusterMap<Cell*>::iterator GroupManager::begin() {
         return group.begin();
     }
 
-    std::map<int, Cell*>::iterator GroupManager::end() {
+    ClusterMap<Cell*>::iterator GroupManager::end() {
         return group.end();
     }
 
@@ -228,7 +232,7 @@ namespace GenBrains {
             return nullptr;
         }
 
-        Cell* result = iter->second;
+        Cell* result = (*iter).second;
         iter++;
 
         return result;

@@ -4,11 +4,11 @@
 #include <sstream>
 #include <mutex>
 #include <unistd.h>
-#include "threading.h"
-#include "groupmanager.h"
-#include "cell.h"
-#include "drawer.h"
-#include "config.h"
+#include "headers/threading.h"
+#include "headers/groupmanager.h"
+#include "headers/cell.h"
+#include "headers/drawer.h"
+#include "headers/config.h"
 
 namespace GenBrains {
     void threadProcess(GroupManager& gm) {

@@ -1,10 +1,10 @@
 #include <vector>
 #include <stdexcept>
 #include <functional>
-#include "map.h"
-#include "cellbot.h"
-#include "type.h"
-#include "printer.h"
+#include "headers/map.h"
+#include "headers/cellbot.h"
+#include "headers/type.h"
+#include "headers/printer.h"
 
 
 namespace GenBrains {

@@ -1,4 +1,4 @@
-#include "config.h"
+#include "headers/config.h"
 
 namespace GenBrains {
     bool Config::produceOrganic() {

@@ -1,4 +1,4 @@
-#include "coords.h"
+#include "headers/coords.h"
 
 namespace GenBrains {
     Coords::Coords(int x, int y): x(x), y(y) {

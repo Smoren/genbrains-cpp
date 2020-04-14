@@ -1,11 +1,11 @@
 #include <algorithm>
-#include "commands.h"
-#include "program.h"
-#include "map.h"
-#include "groupmanager.h"
-#include "cellbot.h"
-#include "type.h"
-#include "randomizer.h"
+#include "headers/commands.h"
+#include "headers/program.h"
+#include "headers/map.h"
+#include "headers/groupmanager.h"
+#include "headers/cellbot.h"
+#include "headers/type.h"
+#include "headers/randomizer.h"
 
 
 namespace GenBrains {

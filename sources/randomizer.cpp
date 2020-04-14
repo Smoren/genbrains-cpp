@@ -1,6 +1,6 @@
 #include <ctime>
 #include <random>
-#include "randomizer.h"
+#include "headers/randomizer.h"
 
 namespace GenBrains {
     bool Randomizer::inited = false;

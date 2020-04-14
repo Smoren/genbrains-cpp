@@ -42,7 +42,7 @@ namespace GenBrains {
                     ++itContainer;
 
                     if(itContainer != container->end()) {
-                        itSubContainer = itContainer->begin();
+                        itSubContainer = (*itContainer).begin();
                         subContainer = &(*itContainer);
                     } else {
                         break;
@@ -92,7 +92,13 @@ namespace GenBrains {
             mtxs[mapIndex]->unlock();
         }
 
-        ClusterMapItem* at(unsigned long index) {
+        iterator find(unsigned long index) {
+            unsigned long mapIndex = getMapIndex(index);
+            auto& targetMap = data.at(mapIndex);
+            return iterator(data, targetMap, data.begin()+mapIndex, targetMap.find(index));
+        }
+
+        ClusterMapItem at(unsigned long index) {
             return data[getMapIndex(index)].at(index);
         }
 
@@ -138,6 +144,10 @@ namespace GenBrains {
             }
 
             return result;
+        }
+
+        std::vector< std::map<int, ClusterMapItem> >& getContainer() {
+            return data;
         }
     protected:
         unsigned long clustersCount;

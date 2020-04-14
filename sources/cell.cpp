@@ -1,4 +1,4 @@
-#include "cell.h"
+#include "headers/cell.h"
 
 namespace GenBrains {
     Cell::Cell(int type) : type(type), id(-1), coords(Coords(-1, -1)) {

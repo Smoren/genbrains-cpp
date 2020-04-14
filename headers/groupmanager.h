@@ -7,6 +7,7 @@
 #include <mutex>
 #include "cell.h"
 #include "map.h"
+#include "clustermap.h"
 
 
 namespace GenBrains {
@@ -15,14 +16,14 @@ namespace GenBrains {
     public:
         GroupManager(Map& map);
         ~GroupManager();
-        const std::map<int, Cell*>& getGroup() const;
+        const ClusterMap<Cell*>& getGroup() const;
         Map& getMap();
         int getSize();
         bool isTerminated();
         void setTerminated();
-        bool isset(int id) const;
-        void checkExist(int id) const;
-        Cell* get(int id) const;
+        bool isset(int id);
+        void checkExist(int id);
+        Cell* get(int id);
         int add(Cell* cell);
         int add(Cell* cell, Coords coords);
         void remove(int id);
@@ -41,8 +42,8 @@ namespace GenBrains {
         void setDrawPreset(int type, const std::function<std::vector<double>(Cell*)> callback);
         const std::function<std::vector<double>(Cell*)>& getDrawPreset(int type) const;
         Distributor& getDistributor();
-        std::map<int, Cell*>::iterator begin();
-        std::map<int, Cell*>::iterator end();
+        ClusterMap<Cell*>::iterator begin();
+        ClusterMap<Cell*>::iterator end();
         void each(const std::function<void(Cell*)>& callback);
         void generate();
         bool cannotYield();
@@ -53,14 +54,14 @@ namespace GenBrains {
         int lastId;
         bool terminated;
         Map& map;
-        std::map<int, Cell*> group;
+        ClusterMap<Cell*> group;
         std::stack<Cell*> forAdd;
         std::stack<Cell*> forRemove;
         std::mutex forAddMutex;
         std::mutex forRemoveMutex;
         std::mutex readableMutex;
         std::mutex writableMutex;
-        std::map<int, Cell*>::iterator iter;
+        ClusterMap<Cell*>::iterator iter;
         std::map<int, const std::function<void(Cell*, Map&, GroupManager&)>> processHandlers;
         std::map<int, const std::function<void(Cell*, Map&, GroupManager&)>> applyHandlers;
         std::map<int, const std::function<std::vector<double>(Cell*)>> drawPresets;

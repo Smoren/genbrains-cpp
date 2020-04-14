@@ -1,5 +1,5 @@
 #include <sstream>
-#include "distributor.h"
+#include "headers/distributor.h"
 
 namespace GenBrains {
     Distributor::Distributor(
