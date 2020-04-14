@@ -40,17 +40,34 @@ namespace GenBrains {
                 break;
             }
 
-            gm.apply();
+            //gm.apply();
 
-            gm.generate();
-
-            if(i % 250 == 0) {
-                gm.getDistributor().updateState();
+            std::vector<std::thread> applyProcesses;
+            for(int j=0; j<Config::THREADS; j++) {
+                applyProcesses.push_back(std::thread(threadApplyAdd, std::ref(gm), j));
             }
+
+            for(int j=0; j<Config::THREADS; j++) {
+                applyProcesses.push_back(std::thread(threadApplyRemove, std::ref(gm), j));
+            }
+
+            for(auto& applyProcess : applyProcesses) {
+                applyProcess.join();
+            }
+
+            gm.apply();
+            gm.generate();
 
             end = std::chrono::system_clock::now();
             int timeSpent = std::chrono::duration_cast<std::chrono::microseconds>(end-start).count();
             int timeToSleep = Config::STEP_TIMEOUT*1000 - timeSpent;
+
+            if(i % 250 == 0) {
+                gm.getDistributor().updateState();
+                std::cout << i << " | time: " << timeSpent << endl;
+                gm.printIdUsage();
+            }
+
             if(timeToSleep > 0) {
                 usleep(Config::STEP_TIMEOUT*1000);
             }
@@ -63,6 +80,20 @@ namespace GenBrains {
         end = std::chrono::system_clock::now();
         std::cout << "time spent: " << std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count() << std::endl;
         std::cout << "process finished " << std::endl;
+    }
+
+    void threadApplyAdd(GroupManager& gm, int id) {
+        Cell* cell;
+        while((cell = gm.getCellForApplyAdd()) != nullptr) {
+            gm.add(cell);
+        }
+    }
+
+    void threadApplyRemove(GroupManager& gm, int id) {
+        Cell* cell;
+        while((cell = gm.getCellForApplyRemove()) != nullptr) {
+            gm.remove(cell);
+        }
     }
 
     void threadSubprocess(GroupManager& gm, int id) {

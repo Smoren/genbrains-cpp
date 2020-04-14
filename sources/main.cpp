@@ -39,6 +39,7 @@ int main() {
     Map map(Config::MAP_WIDTH, Config::MAP_HEIGHT, Config::MAP_CLOSED_X, Config::MAP_CLOSED_Y, distributor);
 
     GroupManager gm(map);
+
     gm.setProcessHandler(Type::BOT, [](Cell* cell, Map& map, GroupManager& gm) {
         cell->process(map, gm);
     });

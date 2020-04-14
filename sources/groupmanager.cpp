@@ -7,7 +7,8 @@ namespace GenBrains {
     GroupManager::GroupManager(
         Map& map
     ) : lastId(0), terminated(false), map(map),
-        group(ClusterMap<Cell*>(static_cast<unsigned long>(map.getWidth()), static_cast<unsigned long>(map.getHeight()))),
+        group(ClusterMap<Cell*>(static_cast<unsigned long>(map.getWidth()*1), static_cast<unsigned long>(map.getHeight()))),
+        idLimit(map.getWidth()*map.getHeight()*1),
         iter(group.begin()) {
 
     }
@@ -27,7 +28,7 @@ namespace GenBrains {
         terminated = true;
     }
 
-    const ClusterMap<Cell*>& GroupManager::getGroup() const {
+    ClusterMap<Cell*>& GroupManager::getGroup() {
         return group;
     }
 
@@ -62,8 +63,10 @@ namespace GenBrains {
     }
 
     int GroupManager::add(Cell* cell) {
-        int id = ++lastId;
+        forAddMutex.lock();
+        int id = getNextId();
         cell->setId(id);
+        forAddMutex.unlock();
         group.insert({id, cell});
 
         return lastId;
@@ -158,6 +161,32 @@ namespace GenBrains {
         writableMutex.unlock();
     }
 
+    Cell* GroupManager::getCellForApplyAdd() {
+        forAddMutex.lock();
+        if(!forAdd.size()) {
+            forAddMutex.unlock();
+            return nullptr;
+        }
+        auto* result = forAdd.top();
+        forAdd.pop();
+        forAddMutex.unlock();
+
+        return result;
+    }
+
+    Cell* GroupManager::getCellForApplyRemove() {
+        forRemoveMutex.lock();
+        if(!forRemove.size()) {
+            forRemoveMutex.unlock();
+            return nullptr;
+        }
+        auto* result = forRemove.top();
+        forRemove.pop();
+        forRemoveMutex.unlock();
+
+        return result;
+    }
+
     void GroupManager::applyAdd() {
         forAddMutex.lock();
         while(forAdd.size()) {
@@ -244,5 +273,21 @@ namespace GenBrains {
 
     std::mutex& GroupManager::getWritableMutex() {
         return writableMutex;
+    }
+
+    void GroupManager::printIdUsage() {
+        cout << "lastId: " << lastId << "/" << idLimit << endl;
+    }
+
+    int GroupManager::getNextId() {
+        if(++lastId >= idLimit) {
+            lastId = 0;
+        }
+
+        while(isset(lastId)) {
+            ++lastId;
+        }
+
+        return lastId;
     }
 }

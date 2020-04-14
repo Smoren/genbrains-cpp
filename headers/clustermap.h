@@ -19,12 +19,15 @@ namespace GenBrains {
             std::vector< std::map<unsigned long, ClusterMapItem> >* container;
             std::map<unsigned long, ClusterMapItem>* subContainer;
             public: iterator(
-                std::vector< std::map<unsigned long, ClusterMapItem> >& container,
-                std::map<unsigned long, ClusterMapItem>& subContainer,
-                const typename std::vector< std::map<unsigned long, ClusterMapItem> >::iterator& itContainer,
-                const typename map<unsigned long, ClusterMapItem>::iterator& itSubContainer
-            ) : itContainer(itContainer), itSubContainer(itSubContainer), container(&container), subContainer(&subContainer) {
-
+                std::vector< std::map<unsigned long, ClusterMapItem> >& _container,
+                std::map<unsigned long, ClusterMapItem>& _subContainer,
+                const typename std::vector< std::map<unsigned long, ClusterMapItem> >::iterator& _itContainer,
+                const typename map<unsigned long, ClusterMapItem>::iterator& _itSubContainer
+            ) : itContainer(_itContainer), itSubContainer(_itSubContainer), container(&_container), subContainer(&_subContainer) {
+                if(itSubContainer == subContainer->end() && itContainer != --container->end()) {
+                    itContainer = --container->end();
+                    itSubContainer = itContainer->end();
+                }
             }
             bool operator==(const iterator& x) const {
                 return itSubContainer == x.itSubContainer;
@@ -94,8 +97,13 @@ namespace GenBrains {
 
         iterator find(unsigned long index) {
             unsigned long mapIndex = getMapIndex(index);
-            auto& targetMap = data.at(mapIndex);
-            return iterator(data, targetMap, data.begin()+mapIndex, targetMap.find(index));
+            try {
+                auto& targetMap = data.at(mapIndex);
+                return iterator(data, targetMap, data.begin()+mapIndex, targetMap.find(index));
+            } catch(std::runtime_error e) {
+                auto& targetMap = data.at(clustersCount-1);
+                return iterator(data, targetMap, --data.end(), targetMap.end());
+            }
         }
 
         ClusterMapItem at(unsigned long index) {
@@ -156,7 +164,7 @@ namespace GenBrains {
         std::vector<std::mutex*> mtxs;
 
         unsigned long getMapIndex(unsigned long index) {
-            unsigned long mapIndex = static_cast<unsigned long>(index) / clusterSize;
+            unsigned long mapIndex = index / clusterSize;
             if(mapIndex >= clustersCount) {
                 throw std::runtime_error("map index is out of range");
             }

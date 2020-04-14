@@ -16,7 +16,7 @@ namespace GenBrains {
     public:
         GroupManager(Map& map);
         ~GroupManager();
-        const ClusterMap<Cell*>& getGroup() const;
+        ClusterMap<Cell*>& getGroup();
         Map& getMap();
         int getSize();
         bool isTerminated();
@@ -35,6 +35,8 @@ namespace GenBrains {
         void process(Cell* cell);
         void apply(Cell* cell);
         void apply();
+        Cell* getCellForApplyAdd();
+        Cell* getCellForApplyRemove();
         void applyAdd();
         void applyRemove();
         void setProcessHandler(int type, const std::function<void(Cell*, Map&, GroupManager&)> callback);
@@ -50,8 +52,10 @@ namespace GenBrains {
         Cell* yield();
         std::mutex& getReadableMutex();
         std::mutex& getWritableMutex();
+        void printIdUsage();
     protected:
         int lastId;
+        int idLimit;
         bool terminated;
         Map& map;
         ClusterMap<Cell*> group;
@@ -65,5 +69,7 @@ namespace GenBrains {
         std::map<int, const std::function<void(Cell*, Map&, GroupManager&)>> processHandlers;
         std::map<int, const std::function<void(Cell*, Map&, GroupManager&)>> applyHandlers;
         std::map<int, const std::function<std::vector<double>(Cell*)>> drawPresets;
+
+        int getNextId();
     };
 }
