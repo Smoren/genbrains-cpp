@@ -7,8 +7,8 @@ namespace GenBrains {
     GroupManager::GroupManager(
         Map& map
     ) : lastId(0), terminated(false), map(map),
-        group(ClusterMap<Cell*>(static_cast<unsigned long>(map.getWidth()*10), static_cast<unsigned long>(map.getHeight()))),
-        idLimit(map.getWidth()*map.getHeight()*10),
+        group(ClusterMap<Cell*>(static_cast<unsigned long>(map.getWidth()*4), static_cast<unsigned long>(map.getHeight()))),
+        idLimit(map.getWidth()*map.getHeight()*4),
         iter(group.begin()) {
 
     }

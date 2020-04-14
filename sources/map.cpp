@@ -137,12 +137,12 @@ namespace GenBrains {
             return;
         }
 
-        auto* lhsMutex = lockers.at(static_cast<unsigned long>(coords.y)).at(static_cast<unsigned long>(coords.x));
-        auto* rhsMutex = lockers.at(static_cast<unsigned long>(newCoords.y)).at(static_cast<unsigned long>(newCoords.x));
+        //auto* lhsMutex = lockers.at(static_cast<unsigned long>(coords.y)).at(static_cast<unsigned long>(coords.x));
+        //auto* rhsMutex = lockers.at(static_cast<unsigned long>(newCoords.y)).at(static_cast<unsigned long>(newCoords.x));
 
-        if(lhsMutex == rhsMutex) {
-            throw std::runtime_error("mutex equals");
-        }
+        //if(lhsMutex == rhsMutex) {
+        //    throw std::runtime_error("mutex equals");
+        //}
 
         // TODO unique_lock?
 
