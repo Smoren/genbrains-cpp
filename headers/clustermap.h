@@ -42,7 +42,7 @@ namespace GenBrains {
                     ++itContainer;
 
                     if(itContainer != container->end()) {
-                        itSubContainer = (*itContainer).begin();
+                        itSubContainer = itContainer->begin();
                         subContainer = &(*itContainer);
                     } else {
                         break;
