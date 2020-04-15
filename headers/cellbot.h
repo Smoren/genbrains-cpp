@@ -4,6 +4,7 @@
 #include "cell.h"
 #include "directionvector.h"
 #include "program.h"
+#include "memorystack.h"
 
 
 namespace GenBrains {
@@ -38,6 +39,7 @@ namespace GenBrains {
         void addViralStat(int underwent, int initiated);
         const std::map<std::string, int>& getViralStat() const;
         double getPredationPower() const;
+        MemoryStack& getMemory();
     protected:
         std::map<std::string, double> feedStat;
         int stepsCount;
@@ -47,5 +49,6 @@ namespace GenBrains {
         double minerals;
         Program program;
         DirectionVector direction;
+        MemoryStack memory;
     };
 }

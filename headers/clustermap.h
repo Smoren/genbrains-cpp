@@ -7,13 +7,11 @@
 
 
 namespace GenBrains {
-    template <typename ClusterMapItem>
-    class ClusterMap
-    {
+    template<typename ClusterMapItem> class ClusterMap {
     public:
         class iterator;
         friend class iterator;
-        class iterator: public std::iterator< std::bidirectional_iterator_tag, ClusterMapItem, ptrdiff_t > {
+        class iterator: public std::iterator<std::bidirectional_iterator_tag, ClusterMapItem, ptrdiff_t> {
             typename std::vector< std::map<unsigned long, ClusterMapItem> >::iterator itContainer;
             typename map<unsigned long, ClusterMapItem>::iterator itSubContainer;
             std::vector< std::map<unsigned long, ClusterMapItem> >* container;
@@ -73,15 +71,12 @@ namespace GenBrains {
         }
 
         ~ClusterMap() {
-            //for(auto& item : *this) {
-            //    delete item.second;
-            //}
             for(auto& mtx : mtxs) {
                 delete mtx;
             }
         }
 
-        void insert(std::pair<unsigned long, ClusterMapItem> item) {
+        virtual void insert(std::pair<unsigned long, ClusterMapItem> item) {
             auto mapIndex = getMapIndex(item.first);
             mtxs[mapIndex]->lock();
             data[mapIndex].insert(item);
@@ -156,6 +151,10 @@ namespace GenBrains {
 
         std::vector< std::map<int, ClusterMapItem> >& getContainer() {
             return data;
+        }
+
+        std::map<int, ClusterMapItem>& getCluster(unsigned long clusterId) {
+            return data.at(clusterId);
         }
     protected:
         unsigned long clustersCount;

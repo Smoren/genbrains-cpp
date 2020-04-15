@@ -76,6 +76,10 @@ namespace GenBrains {
         return data[static_cast<unsigned long>(_pointer)];
     }
 
+    void Program::setPointerValue(int offset, int value) {
+        data[static_cast<unsigned long>(getMovedPointer(offset))] = value;
+    }
+
     int Program::movePointer(int offset) {
         pointer += offset;
 
@@ -157,13 +161,23 @@ namespace GenBrains {
                 CellBot* targetBot = dynamic_cast<CellBot*>(target);
                 if(targetBot == bot) {
                     movePointer(1);
+                    bot->getMemory().push(1);
                 } else if(bot->getPredationPower() >= targetBot->getPredationPower()) {
-                    bot->feedPredation(targetBot->getEnergy()/2, map, gm);
-                    target->setRemoved();
-                    movePointer(2);
-                    stop();
+                    // TODO съесть только с 50% вероятностью, чтобы дать время на реакцию
+                    if(Randomizer::getInteger(0, 100) >= 50) {
+                        bot->feedPredation(targetBot->getEnergy()/1.5, map, gm);
+                        target->setRemoved();
+                        movePointer(2);
+                        bot->getMemory().push(2);
+                        stop();
+                    } else {
+                        movePointer(3);
+                        bot->getMemory().push(3);
+                        stop();
+                    }
                 } else {
-                    movePointer(3);
+                    bot->getMemory().push(4);
+                    movePointer(4);
                 }
                 break;
             }
@@ -171,8 +185,10 @@ namespace GenBrains {
                 movePointer(1);
 
                 if(data[static_cast<unsigned long>(pointer)] >= 32) {
+                    bot->getMemory().push(5);
                     bot->feedMinerals(2, map, gm);
                 } else  {
+                    bot->getMemory().push(6);
                     bot->feedPredation(1, map, gm);
                 }
                 target->setRemoved();
@@ -187,8 +203,10 @@ namespace GenBrains {
             }
             case Type::WALL:
                 movePointer(1);
+                bot->getMemory().push(7);
                 break;
             default:
+                bot->getMemory().push(8);
                 movePointer(1);
         }
     }
@@ -232,41 +250,52 @@ namespace GenBrains {
     void Program::actionObserve(CellBot* bot, Map& map, const DirectionVector& direction) {
         Cell* found = map.get(bot->getCoords(), direction);
         if(found == bot) {
+            bot->getMemory().push(9);
             movePointer(1);
         } else {
             switch(found->getType()) {
                 case Type::EMPTY: {
+                    bot->getMemory().push(10);
                     movePointer(2);
                     break;
                 }
                 case Type::ORGANIC: {
+                    bot->getMemory().push(11);
                     movePointer(3);
                     break;
                 }
                 case Type::BOT: {
                     CellBot* targetBot = dynamic_cast<CellBot*>(found);
                     if(bot->getViralStat().at("underwent")) {
+                        bot->getMemory().push(12);
                         movePointer(4);
                     } else if(bot->compareProgram(targetBot, 0)) {
+                        bot->getMemory().push(13);
                         movePointer(5);
                     } else if(bot->compareProgram(targetBot, 2)) {
+                        bot->getMemory().push(14);
                         movePointer(6);
                     } else if(bot->compareProgram(targetBot, 5)) {
+                        bot->getMemory().push(15);
                         movePointer(7);
                     } else {
+                        bot->getMemory().push(16);
                         movePointer(8); // TODO отдельным флагом???
                     }
                     break;
                 }
                 case Type::POISON: {
+                    bot->getMemory().push(17);
                     movePointer(9);
                     break;
                 }
                 case Type::WALL: {
+                    bot->getMemory().push(18);
                     movePointer(10);
                     break;
                 }
                 default: {
+                    bot->getMemory().push(19);
                     movePointer(11);
                 }
             }

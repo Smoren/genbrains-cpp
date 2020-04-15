@@ -10,7 +10,7 @@
 namespace GenBrains {
     CellBot::CellBot(
         double energy, double energyLimit, DirectionVector directionVector, Program program
-    ) : Cell(Type::BOT), stepsCount(0), energy(energy), energyLimit(energyLimit), minerals(0), program(program), direction(directionVector) {
+    ) : Cell(Type::BOT), stepsCount(0), energy(energy), energyLimit(energyLimit), minerals(0), program(program), direction(directionVector), memory(MemoryStack(program.getBase(), Config::MEMORY_STACK_SIZE)) {
         feedStat.insert({"predation", 0});
         feedStat.insert({"photo", 0});
         feedStat.insert({"minerals", 0});
@@ -185,6 +185,10 @@ namespace GenBrains {
         const double divider = feedStat.at("photo") + feedStat.at("minerals");
         if(divider < 0.0001) return feedStat.at("predation");
         return feedStat.at("predation")/divider;
+    }
+
+    MemoryStack& CellBot::getMemory() {
+        return memory;
     }
 }
 

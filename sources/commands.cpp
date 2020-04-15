@@ -7,12 +7,13 @@
 #include "headers/type.h"
 #include "headers/randomizer.h"
 
-
+// TODO стек оеперативной памяти существа. Чтение и запись
 namespace GenBrains {
     const std::map<int, std::function<void(Program&, CellBot*, Map&, GroupManager&)>> Commands::MAP = {
         {
             0, // двигаться вперед
             [] (Program& prog, CellBot* bot, Map& map, GroupManager& gm) {
+                bot->getMemory().push(0);
                 prog.actionMoveDirect(bot, map, gm);
             }
         },
@@ -126,6 +127,20 @@ namespace GenBrains {
             }
         },
         {
+            39, // Мегапреобразователь фотосинтез+минералы в энергию
+            [] (Program& prog, CellBot* bot, Map& map, GroupManager& gm) {
+                double photoIncome = map.getDistributionValue("photo", bot->getCoords());
+                if(photoIncome > 1 && bot->getMinerals() > 5) {
+                    bot->getMemory().push(20);
+                    bot->feedPhoto(5, map, gm);
+                    bot->convertMineralsToEnergy(map, gm);
+                }
+                bot->getMemory().push(37);
+                prog.movePointer(1);
+                prog.stop();
+            }
+        },
+        {
             40, // Фотосинтез
             [] (Program& prog, CellBot* bot, Map& map, GroupManager& gm) {
                 bot->feedPhoto(map.getDistributionValue("photo", bot->getCoords()), map, gm);
@@ -172,7 +187,9 @@ namespace GenBrains {
         {
             50, // Окружен ли я?
             [] (Program& prog, CellBot* bot, Map& map, GroupManager& gm) {
-                if(map.findEmptyCoordsAround(bot->getCoords()).size() == 7) {
+                unsigned long count = map.findEmptyCoordsAround(bot->getCoords()).size();
+                bot->getMemory().push(static_cast<int>(21+count));
+                if(count == 7) {
                     prog.movePointer(1);
                 } else {
                     prog.movePointer(2);
@@ -182,7 +199,9 @@ namespace GenBrains {
         {
             51, // Одинок ли я?
             [] (Program& prog, CellBot* bot, Map& map, GroupManager& gm) {
-                if(map.findEmptyCoordsAround(bot->getCoords()).size() == 0) {
+                unsigned long count = map.findEmptyCoordsAround(bot->getCoords()).size();
+                bot->getMemory().push(static_cast<int>(21+count));
+                if(count == 0) {
                     prog.movePointer(1);
                 } else {
                     prog.movePointer(2);
@@ -302,6 +321,7 @@ namespace GenBrains {
                 if(mortality*100 > Randomizer::getInteger(0, 100)) {
                     bot->die();
                 }
+                bot->getMemory().push(30);
                 prog.movePointer(1);
             }
         },
@@ -319,6 +339,117 @@ namespace GenBrains {
             63, // Апоптоз
             [] (Program& prog, CellBot* bot, Map& map, GroupManager& gm) {
                 bot->die();
+            }
+        },
+        {
+            64, // Memory pop
+            [] (Program& prog, CellBot* bot, Map& map, GroupManager& gm) {
+                bot->getMemory().pop();
+                prog.movePointer(1);
+            }
+        },
+        {
+            65, // Memory push
+            [] (Program& prog, CellBot* bot, Map& map, GroupManager& gm) {
+                prog.movePointer(1);
+                bot->getMemory().push(prog.getPointerValue());
+                prog.movePointer(1);
+            }
+        },
+        {
+            66, // Memory m+m
+            [] (Program& prog, CellBot* bot, Map& map, GroupManager& gm) {
+                bot->getMemory().add();
+                prog.movePointer(1);
+            }
+        },
+        {
+            67, // Memory m+v
+            [] (Program& prog, CellBot* bot, Map& map, GroupManager& gm) {
+                prog.movePointer(1);
+                bot->getMemory().add(prog.getPointerValue());
+                prog.movePointer(1);
+            }
+        },
+        {
+            68, // Memory m-m
+            [] (Program& prog, CellBot* bot, Map& map, GroupManager& gm) {
+                bot->getMemory().sub();
+                prog.movePointer(1);
+            }
+        },
+        {
+            69, // Memory m-v
+            [] (Program& prog, CellBot* bot, Map& map, GroupManager& gm) {
+                prog.movePointer(1);
+                bot->getMemory().sub(prog.getPointerValue());
+                prog.movePointer(1);
+            }
+        },
+        {
+            70, // Memory m==m
+            [] (Program& prog, CellBot* bot, Map& map, GroupManager& gm) {
+                if(bot->getMemory().equals()) {
+                    prog.movePointer(1);
+                } else {
+                    prog.movePointer(2);
+                }
+            }
+        },
+        {
+            71, // Memory m==v
+            [] (Program& prog, CellBot* bot, Map& map, GroupManager& gm) {
+                prog.movePointer(1);
+                if(bot->getMemory().equals(prog.getPointerValue())) {
+                    prog.movePointer(1);
+                } else {
+                    prog.movePointer(2);
+                }
+            }
+        },
+        {
+            72, // Memory write
+            [] (Program& prog, CellBot* bot, Map& map, GroupManager& gm) {
+                prog.movePointer(1);
+                prog.setPointerValue(0, bot->getMemory().pop());
+            }
+        },
+        {
+            73, // Memory jump absolute
+            [] (Program& prog, CellBot* bot, Map& map, GroupManager& gm) {
+                prog.setPointer(bot->getMemory().pop());
+            }
+        },
+        {
+            74, // Memory jump relative
+            [] (Program& prog, CellBot* bot, Map& map, GroupManager& gm) {
+                prog.movePointer(bot->getMemory().pop());
+            }
+        },
+        {
+            75, // Memory send
+            [] (Program& prog, CellBot* bot, Map& map, GroupManager& gm) {
+                auto cells = map.findCellsAround(bot->getCoords());
+                for(auto& cell : cells) {
+                    if(cell->getType() == Type::BOT) {
+                        CellBot* targetBot = dynamic_cast<CellBot*>(cell);
+                        targetBot->getMemory().push(bot->getMemory().pop());
+                    }
+                }
+            }
+        },
+        {
+            76, // Memory send to friend
+            [] (Program& prog, CellBot* bot, Map& map, GroupManager& gm) {
+                auto cells = map.findCellsAround(bot->getCoords());
+                for(auto& cell : cells) {
+                    if(cell->getType() == Type::BOT) {
+                        CellBot* targetBot = dynamic_cast<CellBot*>(cell);
+                        if(bot->compareProgram(targetBot, 2)) {
+                            targetBot->getMemory().push(bot->getMemory().pop());
+                        }
+                    }
+                }
             }
         },
     };

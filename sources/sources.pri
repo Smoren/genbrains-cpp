@@ -11,4 +11,5 @@ SOURCES += sources/main.cpp \
     sources/program.cpp \
     sources/commands.cpp \
     sources/randomizer.cpp \
-    sources/config.cpp
+    sources/config.cpp \
+    sources/memorystack.cpp

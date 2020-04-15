@@ -23,6 +23,7 @@ namespace GenBrains {
         void setPointer(int value);
         int getPointerValue() const;
         int getPointerValue(int _pointer) const;
+        void setPointerValue(int offset, int value);
         int movePointer(int offset);
         int getMovedPointer(int offset) const;
         std::vector<int> getPart(int start, int count) const;

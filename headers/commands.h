@@ -9,8 +9,7 @@ namespace GenBrains {
     class Map;
     class GroupManager;
 
-    struct Commands
-    {
+    struct Commands {
     public:
         static const std::map<int, std::function<void(Program&, CellBot*, Map&, GroupManager&)>> MAP;
     };

@@ -14,6 +14,7 @@
 #include "headers/type.h"
 #include "headers/commands.h"
 #include "headers/randomizer.h"
+#include "headers/memorystack.h"
 
 using namespace GenBrains;
 
@@ -95,7 +96,7 @@ int main() {
         return {0.8, 0.8, 0.8};
     });
 
-    auto* bot = new CellBot(10, 100, DirectionVector(1, 1), Program(64, 40, Commands::MAP));
+    auto* bot = new CellBot(10, 100, DirectionVector(1, 1), Program(Config::PROGRAM_BASE, 40, Commands::MAP));
     bot->getDirection().randomize();
     auto& dir = bot->getDirection();
     gm.add(bot);
