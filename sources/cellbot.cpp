@@ -129,7 +129,7 @@ namespace GenBrains {
         DirectionVector offset = direction.getNewDirection(rotation);
         Coords crds = map.formatCoords(coords, offset);
         if(!map.isset(crds)) {
-            groupManager.toAdd(clone(offset, 3, type), crds);
+            groupManager.add(clone(offset, 3, type), crds);
         } else {
             const auto& variants = map.findEmptyCoordsAround(coords);
             const int variantsSize = static_cast<int>(variants.size());
@@ -137,7 +137,7 @@ namespace GenBrains {
                 die();
             } else {
                 crds = variants[static_cast<unsigned long>(Randomizer::getInteger(0, variantsSize))];
-                groupManager.toAdd(clone(offset, 3, type), crds);
+                groupManager.add(clone(offset, 3, type), crds);
             }
         }
 

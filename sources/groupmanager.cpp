@@ -5,18 +5,16 @@
 
 namespace GenBrains {
     GroupManager::GroupManager(
-        Map& map
-    ) : lastId(0), terminated(false), map(map),
-        group(ClusterMap<Cell*>(static_cast<unsigned long>(map.getWidth()*4), static_cast<unsigned long>(map.getHeight()))),
-        idLimit(map.getWidth()*map.getHeight()*4),
-        iter(group.begin()) {
+        Map& map, unsigned long clustersCount
+    ) : terminated(false), map(map),
+        group(ClusterGroup<Cell>(clustersCount)) {
 
     }
 
     GroupManager::~GroupManager() {
         // TODO проверить
         std::cout << "destruct start" << std::endl;
-        removeAll();
+        //removeAll();
         std::cout << "destruct end" << std::endl;
     }
 
@@ -28,7 +26,7 @@ namespace GenBrains {
         terminated = true;
     }
 
-    ClusterMap<Cell*>& GroupManager::getGroup() {
+    ClusterGroup<Cell>& GroupManager::getGroup() {
         return group;
     }
 
@@ -37,104 +35,61 @@ namespace GenBrains {
     }
 
     int GroupManager::getSize() {
-        return static_cast<int>(group.size());
+        return static_cast<int>(group.getItemsCount());
     }
 
-    bool GroupManager::isset(int id) {
-        if(group.find(static_cast<unsigned long>(id)) == group.end()) {
-            return false;
-        }
+//    bool GroupManager::isset(int id) {
+//        if(group.find(static_cast<unsigned long>(id)) == group.end()) {
+//            return false;
+//        }
 
-        return true;
+//        return true;
+//    }
+
+//    void GroupManager::checkExist(int id) {
+//        if(!isset(id)) {
+//            std::stringstream ss;
+//            ss << "cell is not exist (id: " << id << ")";
+//            throw std::runtime_error(ss.str());
+//        }
+//    }
+
+//    Cell* GroupManager::get(int id) {
+//        checkExist(id);
+
+//        return group.at(static_cast<unsigned long>(id));
+//    }
+
+    void GroupManager::add(Cell* cell) {
+        group.add(cell);
     }
 
-    void GroupManager::checkExist(int id) {
-        if(!isset(id)) {
-            std::stringstream ss;
-            ss << "cell is not exist (id: " << id << ")";
-            throw std::runtime_error(ss.str());
-        }
-    }
-
-    Cell* GroupManager::get(int id) {
-        checkExist(id);
-
-        return group.at(static_cast<unsigned long>(id));
-    }
-
-    int GroupManager::add(Cell* cell) {
-        //forAddMutex.lock();
-        int id = getNextId();
-        cell->setId(id);
-        //forAddMutex.unlock();
-        group.insert({id, cell});
-
-        return lastId;
-    }
-
-    void GroupManager::add(Cell* cell, int id) {
-        cell->setId(id);
-        group.insert({static_cast<unsigned long>(id), cell});
-    }
-
-    int GroupManager::add(Cell* cell, Coords coords) {
+    void GroupManager::add(Cell* cell, Coords coords) {
         add(cell);
         map.set(cell, coords, Map::defaultOffset, true);
-        return lastId;
     }
 
-    void GroupManager::remove(int id) {
-        Cell* cell = get(id);
-
-        try {
-            map.remove(cell, true);
-        } catch(std::runtime_error e) {}
-
-        group.erase(static_cast<unsigned long>(id));
-        delete cell;
-    }
 
     void GroupManager::remove(Cell* cell) {
         try {
             map.remove(cell, true);
         } catch(std::runtime_error e) {}
 
-        group.erase(static_cast<unsigned long>(cell->getId()));
-        delete cell;
+        group.remove(cell);
     }
 
-    void GroupManager::removeAll() {
-        Cell* cell;
-        generate();
-        while((cell = yield()) != nullptr) {
-            remove(cell);
-        }
-        std::cout << "all removed" << std::endl;
-    }
-
-    void GroupManager::toAdd(Cell *cell) {
-        map.set(cell, cell->getCoords(), Map::defaultOffset, true);
-        forAddMutex.lock();
-        forAdd.push(cell);
-        forAddMutex.unlock();
-    }
-
-    void GroupManager::toAdd(Cell *cell, Coords coords) {
-        map.set(cell, coords, Map::defaultOffset, true);
-        forAddMutex.lock();
-        forAdd.push(cell);
-        forAddMutex.unlock();
-    }
-
-    void GroupManager::toRemove(Cell *cell) {
-        forRemoveMutex.lock();
-        forRemove.push(cell);
-        forRemoveMutex.unlock();
-    }
+//    void GroupManager::removeAll() {
+//        Cell* cell;
+//        generate();
+//        while((cell = yield()) != nullptr) {
+//            remove(cell);
+//        }
+//        std::cout << "all removed" << std::endl;
+//    }
 
     void GroupManager::process(Cell* cell) {
         if(cell->isRemoved()) {
-            toRemove(cell);
+            remove(cell);
             return;
         }
 
@@ -145,111 +100,12 @@ namespace GenBrains {
         processHandlers.at(type)(cell, map, *this);
 
         if(cell->isRemoved()) {
-            toRemove(cell);
+            remove(cell);
         }
-    }
-
-    void GroupManager::apply(Cell* cell) {
-        int type = cell->getType();
-        if(applyHandlers.find(type) == applyHandlers.end()) {
-            return;
-        }
-        applyHandlers.at(type)(cell, map, *this);
     }
 
     void GroupManager::apply() {
-        writableMutex.lock();
-
-        applyAdd();
-        applyRemove();
-
-        writableMutex.unlock();
-    }
-
-    Cell* GroupManager::getCellForAdd() {
-        forAddMutex.lock();
-        if(!forAdd.size()) {
-            forAddMutex.unlock();
-            return nullptr;
-        }
-        auto* result = forAdd.top();
-        forAdd.pop();
-        forAddMutex.unlock();
-
-        return result;
-    }
-
-    Cell* GroupManager::getCellForRemove() {
-        forRemoveMutex.lock();
-        if(!forRemove.size()) {
-            forRemoveMutex.unlock();
-            return nullptr;
-        }
-        auto* result = forRemove.top();
-        forRemove.pop();
-        forRemoveMutex.unlock();
-
-        return result;
-    }
-
-    std::map<int, Cell*> GroupManager::getCellListForAdd(unsigned long count) {
-        std::map<int, Cell*> result;
-        Cell* cell;
-        for(unsigned long i=0; i<count; i++) {
-            if(!forAdd.size()) {
-                break;
-            }
-            cell = forAdd.top();
-            forAdd.pop();
-            result.insert({getNextId(), cell});
-        }
-
-        return result;
-    }
-
-    std::vector<Cell*> GroupManager::getCellListForRemove(unsigned long count) {
-        std::vector<Cell*> result;
-        Cell* cell;
-        for(unsigned long i=0; i<count; i++) {
-            if(!forRemove.size()) {
-                break;
-            }
-            cell = forRemove.top();
-            forRemove.pop();
-            result.push_back(cell);
-        }
-
-        return result;
-    }
-
-    int GroupManager::getForAddCount() {
-        return static_cast<int>(forAdd.size());
-    }
-
-    int GroupManager::getForRemoveCount() {
-        return static_cast<int>(forRemove.size());
-    }
-
-    void GroupManager::applyAdd() {
-        forAddMutex.lock();
-        while(forAdd.size()) {
-            Cell* cell = forAdd.top();
-            forAdd.pop();
-            add(cell);
-        }
-        forAddMutex.unlock();
-    }
-
-    void GroupManager::applyRemove() {
-        forRemoveMutex.lock();
-        while(forRemove.size()) {
-            Cell* cell = forRemove.top();
-            forRemove.pop();
-            try {
-                remove(cell);
-            } catch(std::runtime_error e) {}
-        }
-        forRemoveMutex.unlock();
+        group.apply();
     }
 
     void GroupManager::setProcessHandler(int type, const std::function<void(Cell*, Map&, GroupManager&)> callback) {
@@ -275,62 +131,5 @@ namespace GenBrains {
 
     Distributor& GroupManager::getDistributor() {
         return map.getDistributor();
-    }
-
-    ClusterMap<Cell*>::iterator GroupManager::begin() {
-        return group.begin();
-    }
-
-    ClusterMap<Cell*>::iterator GroupManager::end() {
-        return group.end();
-    }
-
-    void GroupManager::each(const std::function<void(Cell*)>& callback) {
-        for(auto& [id, cell] : group) {
-            callback(cell);
-        }
-    }
-
-    void GroupManager::generate() {
-        iter = group.begin();
-    }
-
-    bool GroupManager::cannotYield() {
-        return iter == group.end();
-    }
-
-    Cell* GroupManager::yield() {
-        if(iter == group.end()) {
-            return nullptr;
-        }
-
-        Cell* result = (*iter).second;
-        iter++;
-
-        return result;
-    }
-
-    std::mutex& GroupManager::getReadableMutex() {
-        return readableMutex;
-    }
-
-    std::mutex& GroupManager::getWritableMutex() {
-        return writableMutex;
-    }
-
-    void GroupManager::printIdUsage() {
-        std::cout << "lastId: " << lastId << "/" << idLimit << std::endl;
-    }
-
-    int GroupManager::getNextId() {
-        if(++lastId >= idLimit) {
-            lastId = 0;
-        }
-
-        while(isset(lastId)) {
-            ++lastId;
-        }
-
-        return lastId;
     }
 }

@@ -50,14 +50,19 @@ namespace GenBrains {
         glClearColor(0.0, 0.0, 0.0, 0.0);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        Drawer::gm->getWritableMutex().lock();
-        Drawer::gm->each([](Cell* cell) {
-            try {
-                if(cell == nullptr) return;
-                Drawer::drawCell(cell->getCoords(), Drawer::gm->getDrawPreset(cell->getType())(cell));
-            } catch(std::runtime_error e) {}
-        });
-        Drawer::gm->getWritableMutex().unlock();
+        //Drawer::gm->getWritableMutex().lock();
+        auto& clusters = Drawer::gm->getGroup().getClusters();
+        for(auto* cluster : clusters) {
+            cluster->lockStorage();
+            for(Cell* cell : cluster->getStorage()) {
+                try {
+                    if(cell == nullptr) return;
+                    Drawer::drawCell(cell->getCoords(), Drawer::gm->getDrawPreset(cell->getType())(cell));
+                } catch(std::runtime_error e) {}
+            }
+            cluster->unlockStorage();
+        }
+        //Drawer::gm->getWritableMutex().unlock();
 
         glFlush();
     }
@@ -67,7 +72,8 @@ namespace GenBrains {
         if(Drawer::process->joinable()) {
             Drawer::process->join();
         }
-        Drawer::gm->removeAll();
+        Drawer::gm->getGroup().terminate();
+        //Drawer::gm->removeAll();
     }
 
     void Drawer::drawCell(Coords coords, std::vector<double> color) {

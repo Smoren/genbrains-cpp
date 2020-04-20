@@ -1,7 +1,7 @@
 #include "headers/cell.h"
 
 namespace GenBrains {
-    Cell::Cell(int type) : type(type), id(-1), coords(Coords(-1, -1)) {
+    Cell::Cell(int type) : type(type), id(-1), clusterId(0), coords(Coords(-1, -1)) {
         mutex = new std::mutex();
     }
 
@@ -71,6 +71,20 @@ namespace GenBrains {
     void Cell::process(Map &map, GroupManager& groupManager) {
 
     }
+
+    unsigned long Cell::getClusterId() const {
+        return clusterId;
+    }
+
+    void Cell::setClusterId(unsigned long clusterId) {
+        this->clusterId = clusterId;
+    }
+
+    void Cell::removeClusterId() {
+        clusterId = 0;
+    }
+
+
 
     std::ostream& operator <<(std::ostream& stream, const Cell& cell) {
         if(cell.getType()) {

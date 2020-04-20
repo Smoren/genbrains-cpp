@@ -21,6 +21,9 @@ namespace GenBrains {
         void removeCoords();
         int getId() const;
         void setId(int _id);
+        unsigned long getClusterId() const;
+        void setClusterId(unsigned long clusterId);
+        void removeClusterId();
         bool isRemoved();
         void setRemoved();
         virtual void process(Map& map, GroupManager& groupManager);
@@ -30,6 +33,7 @@ namespace GenBrains {
     protected:
         int type;
         int id;
+        unsigned long clusterId;
         bool removed = false;
         Coords coords;
         mutable std::mutex* mutex;

@@ -16,4 +16,5 @@ HEADERS += \
     headers/randomizer.h \
     headers/config.h \
     headers/memorystack.h \
-    headers/clustermap.h
+    headers/clustermap.h \
+    headers/clustergroup.h

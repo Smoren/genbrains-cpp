@@ -4,7 +4,7 @@ namespace GenBrains {
     struct Config
     {
     public:
-        static const int THREADS = 10;
+        static const int THREADS = 3;
         static const int CELLS_QUANTUM = 1000;
         static const int STEP_TIMEOUT = 1;
         static const int CELL_SIZE = 4;
