@@ -35,7 +35,7 @@ namespace GenBrains {
         }
     }
 
-    vector< vector<Cell*> > Map::getData() const {
+    std::vector< std::vector<Cell*> > Map::getData() const {
         return data;
     }
 
@@ -51,7 +51,7 @@ namespace GenBrains {
         Coords pos = formatCoords(coords, offset);
 
         if(pos.x < 0 || pos.x >= width || pos.y < 0 || pos.y >= height) {
-            stringstream ss;
+            std::stringstream ss;
             ss << "coords out of range (" << pos.x << ", " << pos.y << ")";
             throw std::runtime_error(ss.str());
         }
@@ -160,7 +160,7 @@ namespace GenBrains {
         Cell* anotherCell = get(newCoords, Map::defaultOffset);
 
         if(callback(cell, anotherCell) && !cell->isRemoved()) {
-            stringstream ss;
+            std::stringstream ss;
             ss << "moved" << coords << " -> " << newCoords;
             cell->log(ss.str());
 
@@ -260,8 +260,8 @@ namespace GenBrains {
         return distributor.getDistributionValue(name, coords, width, height);
     }
 
-    ostream& operator <<(std::ostream& stream, const Map& map) {
-        stringstream result;
+    std::ostream& operator <<(std::ostream& stream, const Map& map) {
+        std::stringstream result;
 
         auto data = map.getData();
         for(unsigned long y=0; y<data.size(); y++) {

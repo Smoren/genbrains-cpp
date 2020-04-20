@@ -102,7 +102,7 @@ namespace GenBrains {
 
     void threadApplyAdd(GroupManager& gm, int limit, int id) {
         gm.getWritableMutex().lock();
-        map<int, Cell*> cells = gm.getCellListForAdd(static_cast<unsigned long>(limit));
+        std::map<int, Cell*> cells = gm.getCellListForAdd(static_cast<unsigned long>(limit));
         gm.getWritableMutex().unlock();
 
         for(auto& p : cells) {
@@ -112,7 +112,7 @@ namespace GenBrains {
 
     void threadApplyRemove(GroupManager& gm, int limit, int id) {
         gm.getWritableMutex().lock();
-        vector<Cell*> cells = gm.getCellListForRemove(static_cast<unsigned long>(limit));
+        std::vector<Cell*> cells = gm.getCellListForRemove(static_cast<unsigned long>(limit));
         gm.getWritableMutex().unlock();
 
         for(auto* cell : cells) {

@@ -107,6 +107,6 @@ int main() {
     Drawer::init(gm, map, process, Config::CELL_SIZE);
     process.join();
 
-    cout << "the end" << endl;
+    std::cout << "the end" << std::endl;
     return 0;
 }

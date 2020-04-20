@@ -13,14 +13,14 @@ namespace GenBrains {
         friend class iterator;
         class iterator: public std::iterator<std::bidirectional_iterator_tag, ClusterMapItem, ptrdiff_t> {
             typename std::vector< std::map<unsigned long, ClusterMapItem> >::iterator itContainer;
-            typename map<unsigned long, ClusterMapItem>::iterator itSubContainer;
+            typename std::map<unsigned long, ClusterMapItem>::iterator itSubContainer;
             std::vector< std::map<unsigned long, ClusterMapItem> >* container;
             std::map<unsigned long, ClusterMapItem>* subContainer;
             public: iterator(
                 std::vector< std::map<unsigned long, ClusterMapItem> >& _container,
                 std::map<unsigned long, ClusterMapItem>& _subContainer,
                 const typename std::vector< std::map<unsigned long, ClusterMapItem> >::iterator& _itContainer,
-                const typename map<unsigned long, ClusterMapItem>::iterator& _itSubContainer
+                const typename std::map<unsigned long, ClusterMapItem>::iterator& _itSubContainer
             ) : itContainer(_itContainer), itSubContainer(_itSubContainer), container(&_container), subContainer(&_subContainer) {
                 if(itSubContainer == subContainer->end() && itContainer != --container->end()) {
                     itContainer = --container->end();
@@ -33,7 +33,7 @@ namespace GenBrains {
             bool operator!=(const iterator& x) const {
                 return !(*this == x);
             }
-            typename map<unsigned long, ClusterMapItem>::reference operator*() const {
+            typename std::map<unsigned long, ClusterMapItem>::reference operator*() const {
                 return *itSubContainer;
             }
             iterator &operator++() {

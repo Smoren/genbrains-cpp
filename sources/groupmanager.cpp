@@ -319,7 +319,7 @@ namespace GenBrains {
     }
 
     void GroupManager::printIdUsage() {
-        cout << "lastId: " << lastId << "/" << idLimit << endl;
+        std::cout << "lastId: " << lastId << "/" << idLimit << std::endl;
     }
 
     int GroupManager::getNextId() {
