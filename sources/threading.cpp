@@ -13,9 +13,12 @@
 namespace GenBrains {
     void threadProcess(GroupManager& gm) {
         int threadSteps = 0;
+        std::mutex stepCounterMutex;
 
-        gm.getGroup().setHandler([&gm, &threadSteps](ClusterGroup<Cell>& cg, Cluster<Cell>& cluster) {
+        gm.getGroup().setHandler([&gm, &threadSteps, &stepCounterMutex](ClusterGroup<Cell>& cg, Cluster<Cell>& cluster) {
             unsigned long id = cluster.getId();
+
+            int divider = 250*Config::THREADS;
 
             while(!cg.isTerminated()) {
                 for(auto* cell : cluster.getStorage()) {
@@ -25,13 +28,12 @@ namespace GenBrains {
                 cluster.apply();
                 cg.finishPhaseApplying();
 
-                cluster.lockStorage();
+                stepCounterMutex.lock();
                 ++threadSteps;
-                cluster.unlockStorage();
-
-                if(threadSteps % (250*Config::THREADS) == 0) {
+                if(threadSteps % divider == 0) {
                     gm.getDistributor().updateState();
                 }
+                stepCounterMutex.unlock();
             }
         });
         gm.getGroup().run();

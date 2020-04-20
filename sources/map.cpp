@@ -169,7 +169,7 @@ namespace GenBrains {
             } catch(std::runtime_error e) {
                 // TODO костыль...
                 cell->log("bad thing");
-                std::cout << "bad thing with type " << cell->getType() << std::endl;
+                //std::cout << "bad thing with type " << cell->getType() << std::endl;
             }
             set(cell, newCoords, Map::defaultOffset, true); // а мы не уверены, что не перезапишем существующую((
         }
