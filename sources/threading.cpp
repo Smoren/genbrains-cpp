@@ -12,7 +12,9 @@
 
 namespace GenBrains {
     void threadProcess(GroupManager& gm) {
-        gm.getGroup().setHandler([&gm](ClusterGroup<Cell>& cg, Cluster<Cell>& cluster) {
+        int threadSteps = 0;
+
+        gm.getGroup().setHandler([&gm, &threadSteps](ClusterGroup<Cell>& cg, Cluster<Cell>& cluster) {
             unsigned long id = cluster.getId();
 
             while(!cg.isTerminated()) {
@@ -22,6 +24,14 @@ namespace GenBrains {
                 cg.finishPhaseBuffering();
                 cluster.apply();
                 cg.finishPhaseApplying();
+
+                cluster.lockStorage();
+                ++threadSteps;
+                cluster.unlockStorage();
+
+                if(threadSteps % (250*Config::THREADS) == 0) {
+                    gm.getDistributor().updateState();
+                }
             }
         });
         gm.getGroup().run();
