@@ -281,6 +281,10 @@ namespace GenBrains {
                 int startOffset = prog.getPointerValue(prog.getMovedPointer(2));
                 double virality = prog.getPointerValue(prog.getMovedPointer(3))/static_cast<double>(prog.getBase());
                 double mortality = std::max(static_cast<double>(0.1), static_cast<double>(prog.getPointerValue(prog.getMovedPointer(4))/static_cast<double>(prog.getBase())));
+
+                virality /= 2;
+                mortality /= 2;
+
                 auto recipients = map.findCellsAround(bot->getCoords());
                 auto viralPart = prog.getPart(prog.getPointer(), count);
 

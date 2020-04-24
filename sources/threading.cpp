@@ -16,7 +16,7 @@ namespace GenBrains {
         std::mutex stepCounterMutex;
 
         gm.getGroup().setHandler([&gm, &threadSteps, &stepCounterMutex](ClusterGroup<Cell>& cg, Cluster<Cell>& cluster) {
-            unsigned long id = cluster.getId();
+            //unsigned long id = cluster.getId();
 
             int divider = 250*Config::THREADS;
 
@@ -32,6 +32,12 @@ namespace GenBrains {
                 ++threadSteps;
                 if(threadSteps % divider == 0) {
                     gm.getDistributor().updateState();
+
+                    std::cout << "clusters: ";
+                    for(auto* cl : gm.getGroup().getClusters()) {
+                        std::cout << cl->getStorage().size() << " ";
+                    }
+                    std::cout << std::endl;
                 }
                 stepCounterMutex.unlock();
             }
