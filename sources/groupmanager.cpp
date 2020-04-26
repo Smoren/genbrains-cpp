@@ -24,6 +24,7 @@ namespace GenBrains {
 
     void GroupManager::setTerminated() {
         terminated = true;
+        group.terminate();
     }
 
     ClusterGroup<Cell>& GroupManager::getGroup() {
