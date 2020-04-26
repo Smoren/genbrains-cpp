@@ -29,7 +29,7 @@ namespace GenBrains {
         std::vector<int> getPart(int start, int count) const;
         void setPart(std::vector<int> part, int start);
         bool canDivide();
-        bool forbidDivide();
+        void forbidDivide();
         Program clone() const;
         void stop();
         void actionGrab(CellBot* bot, Map& map, GroupManager& gm);

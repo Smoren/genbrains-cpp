@@ -137,7 +137,7 @@ namespace GenBrains {
         return _canDivide;
     }
 
-    bool Program::forbidDivide() {
+    void Program::forbidDivide() {
         _canDivide = false;
     }
 
