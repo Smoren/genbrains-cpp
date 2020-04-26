@@ -98,11 +98,9 @@ int main() {
 
     auto* bot = new CellBot(10, 100, DirectionVector(1, 1), Program(Config::PROGRAM_BASE, 40, Commands::MAP));
     bot->getDirection().randomize();
-    auto& dir = bot->getDirection();
     gm.add(bot);
     map.set(bot, Coords(100, 60), Map::defaultOffset);
 
-    std::mutex mutex;
     std::thread process(threadProcess, std::ref(gm));
     Drawer::init(gm, map, process, Config::CELL_SIZE);
     process.join();

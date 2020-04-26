@@ -99,7 +99,7 @@ namespace GenBrains {
         return DirectionVector(x, y);
     }
 
-    DirectionVector DirectionVector::randomize() {
+    void DirectionVector::randomize() {
         x = Randomizer::getInteger(-1, 3);
         y = Randomizer::getInteger(-1, 3);
 

@@ -12,7 +12,7 @@ namespace GenBrains {
         DirectionVector getNewDirection(int rotationSize) const;
         void setDirection(int x, int y);
         DirectionVector clone() const;
-        DirectionVector randomize();
+        void randomize();
         void log();
     };
 }
