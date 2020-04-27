@@ -15,30 +15,33 @@ namespace GenBrains {
         int threadSteps = 0;
         std::mutex stepCounterMutex;
 
-        gm.getGroup().setHandler([&gm, &threadSteps, &stepCounterMutex](ClusterGroup<Cell>& cg, Cluster<Cell>& cluster) {
-            int divider = 250*Config::THREADS;
+        gm.getGroup().setOnFinishPhaseHandler([&gm, &threadSteps, &stepCounterMutex](ClusterGroup<Cell>& cg, bool phase) {
+            if(!phase) {
+                return;
+            }
+            stepCounterMutex.lock();
+            ++threadSteps;
+            if(threadSteps % 250 == 0) {
+                gm.getDistributor().updateState();
 
+                std::cout << "clusters: ";
+                for(auto* cl : gm.getGroup().getClusters()) {
+                    std::cout << cl->getStorage().size() << " ";
+                }
+                std::cout << std::endl;
+            }
+            stepCounterMutex.unlock();
+        });
+
+        gm.getGroup().setThreadHandler([&gm](ClusterGroup<Cell>& cg, Cluster<Cell>& cluster) {
             while(!cg.isTerminated()) {
                 for(auto* cell : cluster.getStorage()) {
                     gm.process(cell);
                 }
-
                 cg.finishPhaseBuffering();
+
                 cluster.apply();
                 cg.finishPhaseApplying();
-
-                stepCounterMutex.lock();
-                ++threadSteps;
-                if(threadSteps % divider == 0) {
-                    gm.getDistributor().updateState();
-
-                    std::cout << "clusters: ";
-                    for(auto* cl : gm.getGroup().getClusters()) {
-                        std::cout << cl->getStorage().size() << " ";
-                    }
-                    std::cout << std::endl;
-                }
-                stepCounterMutex.unlock();
             }
         });
         gm.getGroup().run();

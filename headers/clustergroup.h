@@ -104,7 +104,8 @@ namespace GenBrains {
 
         explicit ClusterGroup(
             unsigned long size
-        ) : size(size), currentClusterIndex(0), phase(ClusterGroup::PHASE_BUFFERING), phaseFinishCounter(0), terminated(false) {
+        ) : size(size), currentClusterIndex(0), phase(ClusterGroup::PHASE_BUFFERING),
+            phaseFinishCounter(0), terminated(false), onFinishPhaseHandler(nullptr) {
             for(unsigned long i=0; i<size; i++) {
                 clusters.push_back(new Cluster<ClusterItem>(i+1));
             }
@@ -169,15 +170,19 @@ namespace GenBrains {
             return result;
         }
 
-        void setHandler(std::function<void(ClusterGroup<ClusterItem>&, Cluster<ClusterItem>&)> handler) {
-            this->handler = handler;
+        void setThreadHandler(std::function<void(ClusterGroup<ClusterItem>&, Cluster<ClusterItem>&)> handler) {
+            this->threadHandler = handler;
+        }
+
+        void setOnFinishPhaseHandler(std::function<void(ClusterGroup<ClusterItem>&, bool)> handler) {
+            this->onFinishPhaseHandler = handler;
         }
 
         std::vector<std::thread>& run() {
             threads.clear();
 
             for(auto* cluster : getClusters()) {
-                threads.push_back(std::thread(this->handler, std::ref(*this), std::ref(*cluster)));
+                threads.push_back(std::thread(this->threadHandler, std::ref(*this), std::ref(*cluster)));
             }
 
             return threads;
@@ -196,13 +201,20 @@ namespace GenBrains {
             std::cout << clusterId << ": " << message << std::endl;
             logMutex.unlock();
         }
+
+        void log(std::string message) {
+            logMutex.lock();
+            std::cout << message << std::endl;
+            logMutex.unlock();
+        }
     protected:
         unsigned long size;
         unsigned long currentClusterIndex;
         bool phase;
         unsigned long phaseFinishCounter;
         bool terminated;
-        std::function<void(ClusterGroup<ClusterItem>&, Cluster<ClusterItem>&)> handler;
+        std::function<void(ClusterGroup<ClusterItem>&, Cluster<ClusterItem>&)> threadHandler;
+        std::function<void(ClusterGroup<ClusterItem>&, bool)> onFinishPhaseHandler;
         std::mutex clusterIndexMutex;
         std::mutex phaseMutex;
         std::mutex logMutex;
@@ -228,6 +240,10 @@ namespace GenBrains {
         void finishPhase() {
             phaseMutex.lock();
             if(++phaseFinishCounter == size) {
+                if(onFinishPhaseHandler != nullptr) {
+                    onFinishPhaseHandler(*this, phase);
+                }
+
                 phaseFinishCounter = 0;
                 phase = !phase;
             }
