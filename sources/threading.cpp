@@ -13,9 +13,12 @@
 namespace GenBrains {
     void threadProcess(GroupManager& gm) {
         int threadSteps = 0;
+        int fullSize = 0;
         std::mutex stepCounterMutex;
+        std::chrono::time_point<std::chrono::system_clock> start, end;
+        start = std::chrono::system_clock::now();
 
-        gm.getGroup().setOnFinishPhaseHandler([&gm, &threadSteps, &stepCounterMutex](ClusterGroup<Cell>& cg, bool phase) {
+        gm.getGroup().setOnFinishPhaseHandler([&gm, &threadSteps, &stepCounterMutex, &start, &end, &fullSize](ClusterGroup<Cell>& cg, bool phase) {
             if(!phase) {
                 return;
             }
@@ -24,12 +27,25 @@ namespace GenBrains {
             if(threadSteps % 250 == 0) {
                 gm.getDistributor().updateState();
 
+                fullSize = 0;
+
                 std::cout << "clusters: ";
                 for(auto* cl : gm.getGroup().getClusters()) {
+                    fullSize += cl->getStorage().size();
                     std::cout << cl->getStorage().size() << " ";
                 }
                 std::cout << std::endl;
+                std::cout << "total: " << fullSize << std::endl;
+
+                end = std::chrono::system_clock::now();
+                auto spent = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
+                std::cout << "time spent: " << spent << std::endl;
+                std::cout << "perfomance index: " << (static_cast<float>(fullSize)/static_cast<float>(spent)) << std::endl;
+                start = end;
+
+                std::cout << "=========" << std::endl;
             }
+
             stepCounterMutex.unlock();
         });
 
