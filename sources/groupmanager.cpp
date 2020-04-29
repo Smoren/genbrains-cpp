@@ -3,6 +3,8 @@
 #include "headers/groupmanager.h"
 #include "headers/commands.h"
 
+using namespace Smoren::ThreadSafeContainers;
+
 namespace GenBrains {
     GroupManager::GroupManager(
         Map& map, unsigned long clustersCount
@@ -39,28 +41,6 @@ namespace GenBrains {
         return static_cast<int>(group.getItemsCount());
     }
 
-//    bool GroupManager::isset(int id) {
-//        if(group.find(static_cast<unsigned long>(id)) == group.end()) {
-//            return false;
-//        }
-
-//        return true;
-//    }
-
-//    void GroupManager::checkExist(int id) {
-//        if(!isset(id)) {
-//            std::stringstream ss;
-//            ss << "cell is not exist (id: " << id << ")";
-//            throw std::runtime_error(ss.str());
-//        }
-//    }
-
-//    Cell* GroupManager::get(int id) {
-//        checkExist(id);
-
-//        return group.at(static_cast<unsigned long>(id));
-//    }
-
     void GroupManager::add(Cell* cell) {
         group.add(cell);
     }
@@ -78,15 +58,6 @@ namespace GenBrains {
 
         group.remove(cell);
     }
-
-//    void GroupManager::removeAll() {
-//        Cell* cell;
-//        generate();
-//        while((cell = yield()) != nullptr) {
-//            remove(cell);
-//        }
-//        std::cout << "all removed" << std::endl;
-//    }
 
     void GroupManager::process(Cell* cell) {
         if(cell->isRemoved()) {

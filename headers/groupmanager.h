@@ -7,7 +7,7 @@
 #include <mutex>
 #include "cell.h"
 #include "map.h"
-#include "clustergroup.h"
+#include "../libs/thread-safe-containers-cpp/src/clustergroup.h"
 
 
 namespace GenBrains {
@@ -16,15 +16,11 @@ namespace GenBrains {
     public:
         GroupManager(Map& map, unsigned long clustersCount);
         ~GroupManager();
-        ClusterGroup<Cell>& getGroup();
+        Smoren::ThreadSafeContainers::ClusterGroup<Cell>& getGroup();
         Map& getMap();
         int getSize();
         bool isTerminated();
         void setTerminated();
-        //bool isset(int id);
-        //void checkExist(int id);
-        //Cell* get(int id);
-        //void removeAll();
         void add(Cell* cell);
         void add(Cell *cell, Coords coords);
         void remove(Cell* cell);
@@ -39,7 +35,7 @@ namespace GenBrains {
     protected:
         bool terminated;
         Map& map;
-        ClusterGroup<Cell> group;
+        Smoren::ThreadSafeContainers::ClusterGroup<Cell> group;
         std::map<int, const std::function<void(Cell*, Map&, GroupManager&)>> processHandlers;
         std::map<int, const std::function<void(Cell*, Map&, GroupManager&)>> applyHandlers;
         std::map<int, const std::function<std::vector<double>(Cell*)>> drawPresets;

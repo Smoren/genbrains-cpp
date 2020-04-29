@@ -10,6 +10,8 @@
 #include "headers/drawer.h"
 #include "headers/config.h"
 
+using namespace Smoren::ThreadSafeContainers;
+
 namespace GenBrains {
     void threadProcess(GroupManager& gm) {
         int threadSteps = 0;

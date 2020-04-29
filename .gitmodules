@@ -1,0 +1,3 @@
+[submodule "libs/thread-safe-containers-cpp"]
+	path = libs/thread-safe-containers-cpp
+	url = https://github.com/Smoren/thread-safe-containers-cpp
