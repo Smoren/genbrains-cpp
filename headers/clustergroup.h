@@ -13,6 +13,45 @@
 namespace GenBrains {
     template<typename ClusterItem> class Cluster {
     public:
+        class iterator;
+        friend class iterator;
+        class iterator: public std::iterator<std::bidirectional_iterator_tag, ClusterItem, ptrdiff_t> {
+        public:
+            explicit iterator(const typename std::set<ClusterItem*>::iterator& it) : it(it) {
+
+            }
+            bool operator==(const iterator& x) const {
+                return it == x.it;
+            }
+            bool operator!=(const iterator& x) const {
+                return !(*this == x);
+            }
+            ClusterItem* operator*() const {
+                return *it;
+            }
+            iterator &operator++() {
+                ++it;
+                return *this;
+            }
+            iterator operator++(int) {
+                iterator tmp = *this;
+                ++(*this);
+                return tmp;
+            }
+            iterator &operator--() {
+                --it;
+                return *this;
+            }
+            iterator operator--(int) {
+                iterator tmp = *this;
+                --(*this);
+                return tmp;
+            }
+
+        protected:
+            typename std::set<ClusterItem*>::iterator it;
+        };
+
         explicit Cluster(unsigned long id) : clusterId(id) {
 
         }
@@ -22,6 +61,14 @@ namespace GenBrains {
             for(auto* item : storage) {
                 delete item;
             }
+        }
+
+        iterator begin() {
+            return iterator(storage.begin());
+        }
+
+        iterator end() {
+            return iterator(storage.end());
         }
 
         unsigned long getId() {

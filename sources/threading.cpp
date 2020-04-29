@@ -43,6 +43,8 @@ namespace GenBrains {
                 std::cout << "perfomance index: " << (static_cast<float>(fullSize)/static_cast<float>(spent)) << std::endl;
                 start = end;
 
+                // TODO this_thread::sleap_for();
+
                 std::cout << "=========" << std::endl;
             }
 
@@ -51,7 +53,7 @@ namespace GenBrains {
 
         gm.getGroup().setThreadHandler([&gm](ClusterGroup<Cell>& cg, Cluster<Cell>& cluster) {
             while(!cg.isTerminated()) {
-                for(auto* cell : cluster.getStorage()) {
+                for(auto* cell : cluster) {
                     gm.process(cell);
                 }
                 cg.finishPhaseBuffering();
