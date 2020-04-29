@@ -3,13 +3,13 @@
 #include <mutex>
 #include <deque>
 #include "coords.h"
+#include "../libs/thread-safe-containers-cpp/src/clustergroup.h"
 
 namespace GenBrains {
     class Map;
     class GroupManager;
 
-    class Cell
-    {
+    class Cell : public Smoren::ThreadSafeContainers::ClusterItem {
     public:
         Cell(int type);
         virtual ~Cell();
@@ -21,9 +21,9 @@ namespace GenBrains {
         void removeCoords();
         int getId() const;
         void setId(int _id);
-        unsigned long getClusterId() const;
-        void setClusterId(unsigned long clusterId);
-        void removeClusterId();
+        virtual unsigned long getClusterId() const;
+        virtual void setClusterId(unsigned long clusterId);
+        virtual void removeClusterId();
         bool isRemoved();
         void setRemoved();
         virtual void process(Map& map, GroupManager& groupManager);
