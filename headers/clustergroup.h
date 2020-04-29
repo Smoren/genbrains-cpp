@@ -228,7 +228,7 @@ namespace GenBrains {
         std::vector<std::thread>& run() {
             threads.clear();
 
-            for(auto* cluster : getClusters()) {
+            for(auto* cluster : clusters) {
                 threads.push_back(std::thread(this->threadHandler, std::ref(*this), std::ref(*cluster)));
             }
 
@@ -320,5 +320,3 @@ namespace GenBrains {
         return stream << group.getClusters();
     }
 }
-
-
