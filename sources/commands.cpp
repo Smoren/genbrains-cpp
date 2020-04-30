@@ -274,7 +274,8 @@ namespace GenBrains {
                 prog.setPointer(0);
             }
         },
-        {
+        // TODO заражение только в определенных направлениях
+        /*{
             60, // Заражение
             [] (Program& prog, CellBot* bot, Map& map, GroupManager& gm) {
                 int count = prog.getPointerValue(prog.getMovedPointer(1));
@@ -338,7 +339,7 @@ namespace GenBrains {
                     prog.movePointer(2);
                 }
             }
-        },
+        },*/
         {
             63, // Апоптоз
             [] (Program& prog, CellBot* bot, Map& map, GroupManager& gm) {
