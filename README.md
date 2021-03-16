@@ -1,5 +1,10 @@
 Генетический алгоритм для эмуляции виртуальной жизни. Находится в разработке.
 
-```
-git pull --recurse-submodules
+```bash
+# for init
+git submodule update --init --recursive
+
+# for update
+git submodule update --recursive --remote
+
 ```
